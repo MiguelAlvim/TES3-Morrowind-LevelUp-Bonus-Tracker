@@ -73,7 +73,7 @@ layoutLeft.append(finalLayout)
 layoutRight = [[g.Push(),g.Text("Expected Bonuses on Next Level Up", font='bold'),g.Push()]]
 layoutRight.append([g.HorizontalSeparator()])
 for atrib in attributes:
-	layoutRight.append([g.Text("+0", key=f"mf_{atrib.name}"),g.Text(atrib.name, font='bold')])
+	layoutRight.append([g.Text("+1", key=f"mf_{atrib.name}"),g.Text(atrib.name, font='bold')])
 
 #selecting icon type - On windows must be .ico, on linux must not be icon
 icon = os.path.dirname(os.path.realpath(sys.argv[0]))+"\icon.ico"
@@ -99,14 +99,16 @@ def updateGuiAndSkillValues(windowObjectArray, checkResult):
 			#attribute modifier counter
 			modifiersGainedThisLevel[checkResult[1]] += newVal - currentVal
 			#checking final atribute modifier, based on the data in https://en.uesp.net/wiki/Morrowind:Level
-			finalModifer = 1
-			if modifiersGainedThisLevel[checkResult[1]]>=1 and modifiersGainedThisLevel[checkResult[1]]<=4:
+			finalModifer = 0
+			if modifiersGainedThisLevel[checkResult[1]]<=0:
+				finalModifer = 1
+			elif modifiersGainedThisLevel[checkResult[1]]<=4:
 				finalModifer = 2
 			elif modifiersGainedThisLevel[checkResult[1]]<=7:
 				finalModifer = 3
 			elif modifiersGainedThisLevel[checkResult[1]]<=9:
 				finalModifer = 4
-			else:
+			elif modifiersGainedThisLevel[checkResult[1]]>=10:
 				finalModifer = 5
 			windowObjectArray[f'mf_{result[1]}'].update(f"+{finalModifer}") 
 
