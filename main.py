@@ -97,8 +97,18 @@ def updateGuiAndSkillValues(windowObjectArray, checkResult):
 			pointsGainedThisLevel[checkResult[0]] = newVal
 			windowObjectArray[f'vl_{result[0]}'].update(newVal) 
 			#attribute modifier counter
-			modifiersGainedThisLevel[checkResult[1]] = modifiersGainedThisLevel[checkResult[1]] + newVal/2 - currentVal/2
-			windowObjectArray[f'mf_{result[1]}'].update(f"+{min(round(modifiersGainedThisLevel[checkResult[1]]),5)}") 
+			modifiersGainedThisLevel[checkResult[1]] += newVal - currentVal
+			#checking final atribute modifier, based on the data in https://en.uesp.net/wiki/Morrowind:Level
+			finalModifer = 1
+			if modifiersGainedThisLevel[checkResult[1]]>=1 and modifiersGainedThisLevel[checkResult[1]]<=4:
+				finalModifer = 2
+			elif modifiersGainedThisLevel[checkResult[1]]<=7:
+				finalModifer = 3
+			elif modifiersGainedThisLevel[checkResult[1]]<=9:
+				finalModifer = 4
+			else:
+				finalModifer = 5
+			windowObjectArray[f'mf_{result[1]}'].update(f"+{finalModifer}") 
 
 #GUI loop and event handling
 while True:
@@ -106,10 +116,11 @@ while True:
 	if event == g.WIN_CLOSED or event == "Cancel":
 		break
 
-	#Button Events
-	for evnt in eventList:
-		result = evnt.actionToExecute(event)
-		if result != None:
-			updateGuiAndSkillValues(window,result)			
+	#Manual Button Events
+	if event.startswith('mb_') or event.startswith('pb_'):
+		for evnt in eventList:
+			result = evnt.actionToExecute(event)
+			if result != None:
+				updateGuiAndSkillValues(window,result)
 
 window.close()
