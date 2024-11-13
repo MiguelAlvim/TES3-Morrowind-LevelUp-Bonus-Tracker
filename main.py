@@ -39,6 +39,14 @@ modifiersGainedThisLevel:dict[str,int] = {}
 #STAR GUI creation
 layoutLeft = [[g.Push(),g.Text("Skills Raised on Current Level", font='bold'),g.Push()]]
 layoutLeft.append([g.HorizontalSeparator()])
+#To homogenize the space between skills, we will create padding for attributes that lack this amount of skills
+largestListElementSize = len(max(attributes).skills)
+#By default the GUI LIB add a padding of 3 pixels up and 3 pixels down, 
+#therefore each element bellow 'largestListElementSize' will require 6 pixel in the y axis to be added at the end of the attribute skill list
+#The largest element used on each row is a button, whose default size is 26 pixels
+#Therefore, the size per element missing has to be 26+6 = 32 pixels on the y axis
+paddingPerElementMissing = 32
+
 totalPerColumn = 3
 elementOnColumnCounter = 0
 colunms = []
@@ -47,7 +55,7 @@ finalLayout = []
 for atrib in attributes:
 	modifiersGainedThisLevel[atrib.name] = 0
 	if len(atrib.skills)>0:
-		colunm.append([g.Text(atrib.name, font='bold', )])
+		colunm.append([g.Text(atrib.name, font='bold', p=((0,0),(3,3))),g.Text("(0)",font='bold',key=f'tot_{atrib.name}',p=((0,0),(3,3)))])
 		for ski in atrib.skills:
 			colunm.append(
 				[
@@ -60,6 +68,10 @@ for atrib in attributes:
 			eventList.append(buttonEvent(id=f'mb_{ski.name}',modifyValue=-1,skillname=ski.name, attributename=atrib.name))
 			eventList.append(buttonEvent(id=f'pb_{ski.name}',modifyValue=1,skillname=ski.name, attributename=atrib.name))
 			pointsGainedThisLevel[ski.name] = 0
+		for a in range(len(atrib.skills),largestListElementSize):#Adding the necessat padding for an aligned UI
+			colunm.append([g.Sizer(0,paddingPerElementMissing)])
+		colunm.append([g.HorizontalSeparator()])
+
 		elementOnColumnCounter += 1
 	if elementOnColumnCounter >= totalPerColumn or atrib == attributes[-1]:
 		elementOnColumnCounter = 0
@@ -74,6 +86,8 @@ layoutRight = [[g.Push(),g.Text("Expected Bonuses on Next Level Up", font='bold'
 layoutRight.append([g.HorizontalSeparator()])
 for atrib in attributes:
 	layoutRight.append([g.Text("+1", key=f"mf_{atrib.name}"),g.Text(atrib.name, font='bold')])
+layoutRight.append([g.HorizontalSeparator()])
+layoutRight.append([g.Button(button_text="Clear", key=f'btt_clear', enable_events= True)])
 
 #selecting icon type - On windows must be .ico, on linux must not be icon
 icon = os.path.dirname(os.path.realpath(sys.argv[0]))+"\icon.ico"
@@ -86,6 +100,17 @@ window = g.Window("TES 3:Morrowind Level Up Bonus Tracker",
 	)
 #END GUI creation
 
+def clearScreen(windowObjectArray):
+	"""Clears all the skills declared an the modifiers presented	
+	"""
+	for atrib in attributes:
+		modifiersGainedThisLevel[atrib.name] = 0
+		if len(atrib.skills)>0:
+			windowObjectArray[f'mf_{atrib.name}'].update(f"+1")
+			windowObjectArray[f'tot_{atrib.name}'].update(f"(0)")
+		for ski in atrib.skills:
+			windowObjectArray[f'vl_{ski.name}'].update(f"0")
+
 def updateGuiAndSkillValues(windowObjectArray, checkResult):
 	"""Receives and array with the objects of the window and the result of the function actionToExecute from a buttonEvent object and update the GUI and internal values if necessary
 	"""
@@ -97,7 +122,8 @@ def updateGuiAndSkillValues(windowObjectArray, checkResult):
 			pointsGainedThisLevel[checkResult[0]] = newVal
 			windowObjectArray[f'vl_{result[0]}'].update(newVal) 
 			#attribute modifier counter
-			modifiersGainedThisLevel[checkResult[1]] += newVal - currentVal
+			modifiersGainedThisLevel[checkResult[1]] += newVal - currentVal			
+			windowObjectArray[f'tot_{result[1]}'].update(f"({modifiersGainedThisLevel[checkResult[1]]})") 
 			#checking final atribute modifier, based on the data in https://en.uesp.net/wiki/Morrowind:Level
 			finalModifer = 0
 			if modifiersGainedThisLevel[checkResult[1]]<=0:
@@ -124,5 +150,7 @@ while True:
 			result = evnt.actionToExecute(event)
 			if result != None:
 				updateGuiAndSkillValues(window,result)
+	if event == 'btt_clear':
+		clearScreen(window)
 
 window.close()

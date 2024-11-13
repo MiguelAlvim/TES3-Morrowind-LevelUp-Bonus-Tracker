@@ -34,6 +34,16 @@ class attribute:
 				sufix = '\n'
 			returnStr = returnStr + prefix + skill.__str__() + sufix
 		return returnStr
+	def __lt__(self,other):
+		return len(self.skills) < len(other.skills)
+	def __le__(self,other):
+		return len(self.skills) <= len(other.skills)
+	def __gt__(self,other):
+		return len(self.skills) > len(other.skills)
+	def __ge__(self,other):
+		return len(self.skills) >= len(other.skills)
+	def eq(self,other):
+		return len(self.skills) == len(other.skills) and self.name == other.name
 
 #Strength
 Strength = attribute("Strength","STR")
