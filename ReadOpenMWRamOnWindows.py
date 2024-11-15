@@ -1,4 +1,5 @@
 import ctypes, psutil, enum, sys
+import ctypes.wintypes #Added so that PyInstaller works properly
 from io import StringIO
 
 #Based on ReadWriteMemory by VSantiago113 (https://github.com/vsantiago113/ReadWriteMemory)
