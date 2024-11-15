@@ -18,8 +18,8 @@ class attribute:
 	"""
 	def __init__(self,name:str,abrev:str):
 		"""
-		:param name Atribute Name
-		:param abrev Atribute Abreviation
+		:param name attribute Name
+		:param abrev attribute Abreviation
 		"""
 		self.name:str = name
 		self.abrev:str = abrev

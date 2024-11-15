@@ -4,6 +4,8 @@ from io import StringIO
 #Based on ReadWriteMemory by VSantiago113 (https://github.com/vsantiago113/ReadWriteMemory)
 #Curently (11/2024), the lib has no support for 64bit pointers, so I wrote a similar one (albeit, simpler) with the support for 64bit and 32bit addresses + reading varvalues of 4 and 8 bit from RAM
 
+#To collect individual skills levels is a TODO thing... Gotta have some patience to collect the fixed address of all the 26 skills
+
 class MemoryReturnType(enum.Enum):
 	"""
 	Enum used to represent if the amount of data that we are going to read from RAM is 4 or 8 bytes
@@ -14,29 +16,70 @@ class MemoryReturnType(enum.Enum):
 
 class OpenMWCharcterLevelUpTotalSkills:
 	"""
-	Holds the total of skills of each attribute that have been leved up on the current level.
+	Holds the total of skills of each attribute that have been leved up on the current level, as well as current skill and attribute levels
 	"""
-	def __init_(self):
-		self.Strength = 0
-		self.Intelligence = 0
-		self.Willpower = 0
-		self.Agility = 0
-		self.Speed = 0
-		self.Endurance = 0
-		self.Personlaity = 0
-		self.Luck = 0
+	def __init__(self):
+		#Atributtes
+		self.Attributes = {}
+		self.Attributes['Strength'] = 0
+		self.Attributes['Intelligence'] = 0
+		self.Attributes['Willpower'] = 0
+		self.Attributes['Agility'] = 0
+		self.Attributes['Speed'] = 0
+		self.Attributes['Endurance'] = 0
+		self.Attributes['Personality'] = 0
+		self.Attributes['Luck'] = 0
+		#Total of Skills raised in this level
+		self.AmountSkillRaised = {}
+		self.AmountSkillRaised['Strength'] = 0
+		self.AmountSkillRaised['Intelligence'] = 0
+		self.AmountSkillRaised['Willpower'] = 0
+		self.AmountSkillRaised['Agility'] = 0
+		self.AmountSkillRaised['Speed'] = 0
+		self.AmountSkillRaised['Endurance'] = 0
+		self.AmountSkillRaised['Personality'] = 0
+		self.AmountSkillRaised['Luck'] = 0
+		#Skills Levels
+		self.CurrentSkills = {}
+		self.CurrentSkills['Acrobatic'] = 0
+		self.CurrentSkills['Armorer'] = 0
+		self.CurrentSkills['Axe'] = 0
+		self.CurrentSkills['BluntWeapon'] = 0
+		self.CurrentSkills['LongBlade'] = 0
+		self.CurrentSkills['Alchemy'] = 0
+		self.CurrentSkills['Conjuration'] = 0
+		self.CurrentSkills['Enchant'] = 0
+		self.CurrentSkills['Security'] = 0
+		self.CurrentSkills['Alteration'] = 0
+		self.CurrentSkills['Destruction'] = 0
+		self.CurrentSkills['Mysticism'] = 0
+		self.CurrentSkills['Restoration'] = 0
+		self.CurrentSkills['Block'] = 0
+		self.CurrentSkills['LightArmor'] = 0
+		self.CurrentSkills['Marksman'] = 0
+		self.CurrentSkills['Sneak'] = 0
+		self.CurrentSkills['Athletics'] = 0
+		self.CurrentSkills['HandToHand'] = 0
+		self.CurrentSkills['ShortBlade'] = 0
+		self.CurrentSkills['Unarmored'] = 0
+		self.CurrentSkills['HeavyArmor'] = 0
+		self.CurrentSkills['MediummArmor'] = 0
+		self.CurrentSkills['Spear'] = 0
+		self.CurrentSkills['Illusion'] = 0
+		self.CurrentSkills['Mercantile'] = 0
+		self.CurrentSkills['Speechcraft'] = 0
 	def __str__(self):
 		old_stdout = sys.stdout  
 		result = StringIO()
 		sys.stdout = result
-		print(f'Strength: {self.Strength}')
-		print(f'Intelligence: {self.Intelligence}')
-		print(f'Willpower: {self.Willpower}')
-		print(f'Agility: {self.Agility}')
-		print(f'Speed: {self.Speed}')
-		print(f'Endurance: {self.Endurance}')
-		print(f'Personlaity: {self.Personlaity}')
-		print(f'Luck: {self.Luck}',end='')
+		print(f'Strength: {self.AmountSkillRaised["Strength"]}')
+		print(f'Intelligence: {self.AmountSkillRaised["Intelligence"]}')
+		print(f'Willpower: {self.AmountSkillRaised["Willpower"]}')
+		print(f'Agility: {self.AmountSkillRaised["Agility"]}')
+		print(f'Speed: {self.AmountSkillRaised["Speed"]}')
+		print(f'Endurance: {self.AmountSkillRaised["Endurance"]}')
+		print(f'Personality: {self.AmountSkillRaised["Personality"]}')
+		print(f'Luck: {self.AmountSkillRaised["Luck"]}',end='')
 		sys.stdout = old_stdout
 		return result.getvalue()
 
@@ -87,7 +130,7 @@ def IsProcessIs64bits(handle):#If false, is 32bits - Thanks to yinkaisheng in ht
 	else:		
 		return False
 
-def CloserocessHandle(handle):
+def CloseProcessHandle(handle):
 	#Kernel32
 	kernel32 = ctypes.windll.Kernel32
 	kernel32.CloseHandle(handle)
@@ -100,7 +143,7 @@ def ReadIntValueInMemory(handle,offsets:list[int]=[],returnByteSize:MemoryReturn
 
 	You must pass even the address of the field you want to read as an offset
 	"""
-	baseValue = GetProcessBaseAddress(openMWHandle)
+	baseValue = GetProcessBaseAddress(handle)
 	is64 = IsProcessIs64bits(handle)
 	counter = len(offsets)
 	for offset in offsets:
@@ -146,21 +189,21 @@ def GetProcessBaseAddress(handle):
 
 def GetOpenMWCurrentLeveUpBonuses(handle) -> OpenMWCharcterLevelUpTotalSkills:
 	"""
-	Given an OpenMW process handle, reads the current amount of skill of each atribute that the currently loaded character has.
+	Given an OpenMW process handle, reads the current amount of skill of each attribute that the currently loaded character has.
 	"""
 	result = OpenMWCharcterLevelUpTotalSkills()
-	result.Strength = ReadIntValueInMemory(handle,[0x015FC3D0,0x30,0x108,0x220,0x118,0x0,0x348,0x0],MemoryReturnType.BYTE4)
-	result.Intelligence = ReadIntValueInMemory(handle,[0x015FC3D0,0x30,0x108,0x220,0x118,0x0,0x348,0x4],MemoryReturnType.BYTE4)
-	result.Willpower = ReadIntValueInMemory(handle,[0x015FC3D0,0x30,0x108,0x220,0x460,0x8],MemoryReturnType.BYTE4)
-	result.Agility = ReadIntValueInMemory(handle,[0x015FC3D0,0x30,0x108,0x220,0x118,0x0,0x348,0xC],MemoryReturnType.BYTE4)
-	result.Speed = ReadIntValueInMemory(handle,[0x015FC3D0,0x30,0x108,0x220,0x460,0x10],MemoryReturnType.BYTE4)
-	result.Endurance = ReadIntValueInMemory(handle,[0x015FC3D0,0x30,0x108,0x220,0x460,0x14],MemoryReturnType.BYTE4)
-	result.Personlaity = ReadIntValueInMemory(handle,[0x015FC3D0,0x30,0x108,0x220,0x460,0x18],MemoryReturnType.BYTE4)
-	result.Luck = 0
+	result.AmountSkillRaised['Strength'] = ReadIntValueInMemory(handle,[0x015FC3D0,0x30,0x108,0x220,0x118,0x0,0x348,0x0],MemoryReturnType.BYTE4)
+	result.AmountSkillRaised['Intelligence'] = ReadIntValueInMemory(handle,[0x015FC3D0,0x30,0x108,0x220,0x118,0x0,0x348,0x4],MemoryReturnType.BYTE4)
+	result.AmountSkillRaised['Willpower'] = ReadIntValueInMemory(handle,[0x015FC3D0,0x30,0x108,0x220,0x460,0x8],MemoryReturnType.BYTE4)
+	result.AmountSkillRaised['Agility'] = ReadIntValueInMemory(handle,[0x015FC3D0,0x30,0x108,0x220,0x118,0x0,0x348,0xC],MemoryReturnType.BYTE4)
+	result.AmountSkillRaised['Speed'] = ReadIntValueInMemory(handle,[0x015FC3D0,0x30,0x108,0x220,0x460,0x10],MemoryReturnType.BYTE4)
+	result.AmountSkillRaised['Endurance'] = ReadIntValueInMemory(handle,[0x015FC3D0,0x30,0x108,0x220,0x460,0x14],MemoryReturnType.BYTE4)
+	result.AmountSkillRaised['Personality'] = ReadIntValueInMemory(handle,[0x015FC3D0,0x30,0x108,0x220,0x460,0x18],MemoryReturnType.BYTE4)
+	result.AmountSkillRaised['Luck'] = 0
 	return result
 
 #Test
 #openMWHandle = GetOpenMWProcessHandle()
 #print(GetOpenMWCurrentLeveUpBonuses(openMWHandle))
 
-#CloserocessHandle(openMWHandle)
+#CloseProcessHandle(openMWHandle)
