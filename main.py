@@ -3,6 +3,7 @@ import os
 import sys
 import FreeSimpleGUI as g
 from AttributesAndSkills import attributesAndSkills as attributes, skill, attribute
+from ReadOpenMWRamOnWindows import GetOpenMWProcessHandle, CloserocessHandle, GetOpenMWCurrentLeveUpBonuses, OpenMWCharcterLevelUpTotalSkills
 
 #This Class has all we need to handle a minus or plus event
 class buttonEvent:
@@ -143,6 +144,7 @@ while True:
 	event, values = window.read()
 	if event == g.WIN_CLOSED or event == "Cancel":
 		break
+	
 
 	#Manual Button Events
 	if event.startswith('mb_') or event.startswith('pb_'):
