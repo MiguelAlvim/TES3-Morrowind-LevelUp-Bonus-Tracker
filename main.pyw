@@ -200,12 +200,12 @@ while True:
 	if isOpenMWRamReadingOn:
 		if(openMWEventHandler == None):
 			openMWEventHandler = GetOpenMWProcessHandle()
-		char = GetOpenMWCurrentLeveUpBonuses(openMWEventHandler)
-		print(char)
-		updateModifiersGainedThisLevel(char)
-		updateWindowWithModifersGainedThisLevel(window,modifiersGainedThisLevelAutomatic)
-		pass
-
+		if(openMWEventHandler != None):
+			char = GetOpenMWCurrentLeveUpBonuses(openMWEventHandler)
+			print(char)
+			updateModifiersGainedThisLevel(char)
+			updateWindowWithModifersGainedThisLevel(window,modifiersGainedThisLevelAutomatic)
+	
 	#Button Events
 	if (event.startswith('mb_') or event.startswith('pb_')) and not isOpenMWRamReadingOn:
 		for evnt in eventList:

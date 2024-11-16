@@ -144,19 +144,22 @@ def ReadIntValueInMemory(handle,offsets:list[int]=[],returnByteSize:MemoryReturn
 
 	You must pass even the address of the field you want to read as an offset
 	"""
-	baseValue = GetProcessBaseAddress(handle)
-	is64 = IsProcessIs64bits(handle)
-	counter = len(offsets)
-	for offset in offsets:
-		counter-=1
-		if counter != 0:
-			if is64:
-				baseValue = ReadProcessMemory(handle,baseValue+offset,MemoryReturnType.BYTE8)
+	try:
+		baseValue = GetProcessBaseAddress(handle)
+		is64 = IsProcessIs64bits(handle)
+		counter = len(offsets)
+		for offset in offsets:
+			counter-=1
+			if counter != 0:
+				if is64:
+					baseValue = ReadProcessMemory(handle,baseValue+offset,MemoryReturnType.BYTE8)
+				else:
+					baseValue = ReadProcessMemory(handle,baseValue+offset,MemoryReturnType.BYTE4)
 			else:
-				baseValue = ReadProcessMemory(handle,baseValue+offset,MemoryReturnType.BYTE4)
-		else:
-			baseValue = ReadProcessMemory(handle,baseValue+offset,returnByteSize)
-	return baseValue
+				baseValue = ReadProcessMemory(handle,baseValue+offset,returnByteSize)
+		return baseValue
+	except:
+		return 0
 
 def ReadProcessMemory(handle,lpBaseAddress,returnSize:MemoryReturnType = MemoryReturnType.BYTE4):
 	"""
@@ -184,9 +187,12 @@ def GetProcessBaseAddress(handle):
 	"""
 	Given a process, finds it's base address
 	"""
-	modules = (ctypes.wintypes.HMODULE*1)()
-	ctypes.windll.psapi.EnumProcessModules(handle, modules, ctypes.sizeof(modules), None)
-	return [x for x in tuple(modules) if x != None][0]
+	try:
+		modules = (ctypes.wintypes.HMODULE*1)()
+		ctypes.windll.psapi.EnumProcessModules(handle, modules, ctypes.sizeof(modules), None)
+		return [x for x in tuple(modules) if x != None][0]
+	except:
+		return None
 
 def GetOpenMWCurrentLeveUpBonuses(handle) -> OpenMWCharcterLevelUpTotalSkills:
 	"""
