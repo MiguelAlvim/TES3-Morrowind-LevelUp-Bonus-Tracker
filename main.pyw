@@ -2,12 +2,13 @@ import platform
 import os
 import sys
 import FreeSimpleGUI as g
-from AttributesAndSkills import attributesAndSkills as attributes, skill, attribute
-from ReadOpenMWRamOnWindows import GetOpenMWProcessHandle, CloseProcessHandle, GetOpenMWCurrentLeveUpBonuses, OpenMWCharcterLevelUpTotalSkills
+import PyMemoryEditor
+from AttributesAndSkills import attributesAndSkills as attributes
+from ReadOpenMWRamOnWinAndLinux import GetOpenMWWindowProcess, GetCharacterSkillsIncreases, OpenMWCharcterLevelUpTotalSkills
 
 #Global Flags
 isOpenMWRamReadingOn = False
-openMWEventHandler = None
+openMWProcess = None
 
 #This Class has all we need to handle a minus or plus event
 class buttonEvent:
@@ -192,16 +193,16 @@ def EnableOrDisableManualControls():
 while True:
 	event, values = window.read(timeout=500)
 	if event == g.WIN_CLOSED or event == "Cancel":
-		CloseProcessHandle(openMWEventHandler)
-		openMWEventHandler = None
+		openMWProcess.close()
+		openMWProcess = None
 		break
 
 	#OpenMW RAM Reading	
 	if isOpenMWRamReadingOn:
-		if(openMWEventHandler == None):
-			openMWEventHandler = GetOpenMWProcessHandle()
-		if(openMWEventHandler != None):
-			char = GetOpenMWCurrentLeveUpBonuses(openMWEventHandler)
+		if(openMWProcess == None):
+			openMWProcess = GetOpenMWWindowProcess()
+		if(openMWProcess != None):
+			char = GetCharacterSkillsIncreases(openMWProcess)
 			print(char)
 			updateModifiersGainedThisLevel(char)
 			updateWindowWithModifersGainedThisLevel(window,modifiersGainedThisLevelAutomatic)
