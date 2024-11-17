@@ -2,7 +2,6 @@ import platform
 import os
 import sys
 import FreeSimpleGUI as g
-import PyMemoryEditor
 from AttributesAndSkills import attributesAndSkills as attributes
 from ReadOpenMWRamOnWinAndLinux import GetOpenMWWindowProcess, GetCharacterSkillsIncreases, OpenMWCharcterLevelUpTotalSkills
 
@@ -103,7 +102,7 @@ layoutRight.append([g.Button(button_text="Clear", key=f'btt_clear', enable_event
 
 #Direct RAM read is currently only avaible on Windows
 layoutRight.append([g.Text("Read from Running OpenMW (Only on Windows)")])
-layoutRight.append([g.Button(button_text="OFF", key=f'btt_toggleOpenMWRAM', enable_events= True, disabled=(platform.system() != "Windows"), button_color = "red"), g.Text("Updates Every 0.5s")])
+layoutRight.append([g.Button(button_text="OFF", key=f'btt_toggleOpenMWRAM', enable_events= True, button_color = "red"), g.Text("Updates Every 0.5s")])
 
 #selecting icon type - On windows must be .ico, on linux must not be icon
 icon = os.path.dirname(os.path.realpath(sys.argv[0]))+"\icon.ico"
