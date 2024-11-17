@@ -192,7 +192,7 @@ def EnableOrDisableManualControls():
 while True:
 	event, values = window.read(timeout=500)
 	if event == g.WIN_CLOSED or event == "Cancel":
-		if openMWProcess == None:
+		if openMWProcess != None:
 			openMWProcess.close()
 		break
 
