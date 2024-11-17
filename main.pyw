@@ -193,8 +193,8 @@ def EnableOrDisableManualControls():
 while True:
 	event, values = window.read(timeout=500)
 	if event == g.WIN_CLOSED or event == "Cancel":
-		openMWProcess.close()
-		openMWProcess = None
+		if openMWProcess == None:
+			openMWProcess.close()
 		break
 
 	#OpenMW RAM Reading	
