@@ -1,4 +1,4 @@
-import PyMemoryEditor, sys
+import PyMemoryEditor, sys, ctypes
 from io import StringIO
 
 #Base Class for return
@@ -71,6 +71,20 @@ class OpenMWCharcterLevelUpTotalSkills:
 		sys.stdout = old_stdout
 		return result.getvalue()
 
+def GetProcessBaseAddress(process):
+	"""
+	Given a process, finds it's base address
+	"""
+	try:
+		if "win" in sys.platform:
+			modules = (ctypes.wintypes.HMODULE*1)()
+			ctypes.windll.psapi.EnumProcessModules(process._WindowsProcess__process_handle, modules, ctypes.sizeof(modules), None)
+			return [x for x in tuple(modules) if x != None][0]
+		else:
+			return 0x0
+	except:
+		return 0x0
+
 def GetOpenMWWindowProcess(windowTitle="OpenMW"):
 	"""
 	Gets the process of OpenMW
@@ -84,15 +98,16 @@ def GetCharacterSkillsIncreases(process):
 	"""
 	Given a PyMemoryEditor process of an OpenMW instance, gets the current total skillups per attributes on the current level
 	"""
+	baseAddress = GetProcessBaseAddress(process)
 	result = OpenMWCharcterLevelUpTotalSkills()
 	addressAndOffsets = {}
-	addressAndOffsets['Strength'] = [0x7FF6C22CC3D0,0x30,0x108,0x220,0x118,0x0,0x348,0x0]
-	addressAndOffsets['Intelligence'] = [0x7FF6C22CC3D0,0x30,0x108,0x220,0x118,0x0,0x348,0x4]
-	addressAndOffsets['Willpower'] = [0x7FF6C22CC3D0,0x30,0x108,0x220,0x460,0x8]
-	addressAndOffsets['Agility'] = [0x7FF6C22CC3D0,0x30,0x108,0x220,0x118,0x0,0x348,0xC]
-	addressAndOffsets['Speed'] = [0x7FF6C22CC3D0,0x30,0x108,0x220,0x460,0x10]
-	addressAndOffsets['Endurance'] = [0x7FF6C22D3B28,0x330,0x108,0x220,0x460,0x14]
-	addressAndOffsets['Personality'] = [0x7FF6C22CC3D0,0x30,0x108,0x220,0x460,0x18]
+	addressAndOffsets['Strength'] = [baseAddress+0x015FC3D0,0x30,0x108,0x220,0x118,0x0,0x348,0x0]
+	addressAndOffsets['Intelligence'] = [baseAddress+0x015FC3D0,0x30,0x108,0x220,0x118,0x0,0x348,0x4]
+	addressAndOffsets['Willpower'] = [baseAddress+0x015FC3D0,0x30,0x108,0x220,0x460,0x8]
+	addressAndOffsets['Agility'] = [baseAddress+0x015FC3D0,0x30,0x108,0x220,0x118,0x0,0x348,0xC]
+	addressAndOffsets['Speed'] = [baseAddress+0x015FC3D0,0x30,0x108,0x220,0x460,0x10]
+	addressAndOffsets['Endurance'] = [baseAddress+0x1603B28,0x330,0x108,0x220,0x460,0x14]
+	addressAndOffsets['Personality'] = [baseAddress+0x015FC3D0,0x30,0x108,0x220,0x460,0x18]
 	
 	for atrib in addressAndOffsets:
 		value = 0
@@ -104,6 +119,12 @@ def GetCharacterSkillsIncreases(process):
 	return result
 
 #Test
-#process = GetOpenMWWindowProcess()
-#print(GetCharacterSkillsIncreases(process))
-#process.close()
+# process = GetOpenMWWindowProcess()
+# print(hex(GetProcessBaseAddress(process)))
+# for memory_region in process.get_memory_regions():
+# 	base_address = memory_region["address"]
+# 	print(hex(base_address))
+# 	size = memory_region["size"]
+# 	information = memory_region["struct"]
+# print(GetCharacterSkillsIncreases(process))
+# process.close()
